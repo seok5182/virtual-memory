@@ -263,7 +263,46 @@ vmmap [PID]
 
 ---
 
-## 6. 작업 히스토리
+## 6. mmap() 실험 (2026-03-18)
+
+`mmap_test.c`를 통해 파일을 가상 주소에 매핑하고 Demand Paging을 확인한 실험입니다.
+
+### 실험 결과 (PID 22076)
+| 단계 | VSIZE | RESIDENT | DIRTY | 비고 |
+| :--- | :--- | :--- | :--- | :--- |
+| **1단계: mmap() 직후** | 10.0M | **0K** | **0K** | 가상 주소만 매핑, RAM 미할당 |
+| **2단계: 파일 전체 읽기 후** | 10.0M | **10.0M** | **0K** | RAM에 올라옴, 수정 없으니 Clean |
+
+### 핵심 인사이트
+
+**힙 실험과 비교**
+| | malloc/memset | mmap |
+| :--- | :--- | :--- |
+| RESIDENT (접근 전) | 0K | 0K |
+| RESIDENT (접근 후) | 10.0M | 10.0M |
+| DIRTY (접근 후) | **10.0M** | **0K** |
+
+- Demand Paging 동작은 동일하지만 **DIRTY가 다른 이유**: 힙은 디스크 원본이 없는 새 데이터 → Dirty. mmap은 디스크 파일이 원본이고 읽기만 했으니 RAM = 디스크 원본 → Clean
+
+**Dirty의 정확한 의미**
+> "디스크 원본과 RAM의 내용이 달라졌거나, 디스크에 원본이 아예 없는 경우"
+
+| 경우 | Dirty 여부 |
+| :--- | :--- |
+| Text (코드) | Clean - 실행 중 코드 수정 없음 |
+| Data (전역 변수) | Dirty - 실행 중 값 변경 시 원본과 달라짐 |
+| Stack / Heap | Dirty - 디스크에 원본 없음 |
+| mmap 읽기만 | Clean - 디스크 원본과 일치 |
+| mmap 수정 시 | Dirty - 디스크 원본과 달라짐 |
+
+**mmap은 4개 영역(Text/Data/Stack/Heap)과 별개**
+- vmmap에서 `mapped file`이라는 독립된 영역으로 표시됨
+- 가상 주소 공간을 사용하지만 디스크 파일과 연결된 별도 공간
+
+---
+
+## 7. 작업 히스토리
 - **2026-03-15**: 프로젝트 초기화 및 `memory_test.c`를 통한 가상 메모리 기본 구조(Stack, Data) 분석 완료.
 - **2026-03-16**: `heap_test.c`를 통한 힙(Heap) 동적 할당 및 **Demand Paging(지연 할당)** 실증 실험 완료. vmmap 리포트 분석 가이드 보강.
 - **2026-03-17**: Page Fault 상세 흐름, CPU/OS 관계(커널 모드/유저 모드/인터럽트), `malloc()`·`memset()` 코드 레벨 동작 원리 학습 및 기록. `stack_overflow_test.c` 실험 완료 - 7,689번 재귀 호출에서 Segfault 확인.
+- **2026-03-18**: `mmap_test.c` 실험 완료 - Demand Paging 확인, 힙과 DIRTY 차이 분석, Dirty 개념 정리.

@@ -1,6 +1,8 @@
 # Binaries
 memory_test
 heap_test
+stack_overflow_test
+mmap_test
 
 # OS files
 .DS_Store

@@ -26,8 +26,12 @@
 - Guard Page(`0x16a7f0000`) 침범으로 종료
 - Stack Overflow는 가상 메모리에서 터짐 (RAM 무관)
 
+### 실험 4: mmap() (2026-03-18) - `mmap_test.c`
+- `mmap()` 직후 RESIDENT 0K → 파일 전체 읽기 후 RESIDENT 10.0M (Demand Paging 확인)
+- 힙과 달리 DIRTY 0K → 디스크 원본과 RAM 내용 일치 (Clean)
+- vmmap에서 `mapped file`로 표시되는 별도 영역 확인
+
 ## 진행 예정 실험
-- [ ] 실험 4: `mmap()` - 파일을 가상 주소에 매핑, Demand Paging 확인
 - [ ] 실험 5: `fork()` + CoW - 멀티프로세스 격리 및 Copy-on-Write 확인
 - [ ] 실험 6: TLB miss - 순차 vs 랜덤 접근 성능 측정
 
