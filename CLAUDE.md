@@ -31,8 +31,13 @@
 - 힙과 달리 DIRTY 0K → 디스크 원본과 RAM 내용 일치 (Clean)
 - vmmap에서 `mapped file`로 표시되는 별도 영역 확인
 
+### 실험 5: fork() + CoW (2026-03-18) - `fork_cow_test.c`
+- fork() 직후 자식 MALLOC_LARGE RESIDENT 16K → 물리 RAM 복사 안 함 (CoW 공유)
+- 자식 memset('B') 후 RESIDENT 10MB → CoW 발동으로 페이지 복사
+- 부모 data[0] = 'A' 유지 → 프로세스 격리 확인
+
 ## 진행 예정 실험
-- [ ] 실험 5: `fork()` + CoW - 멀티프로세스 격리 및 Copy-on-Write 확인
+- [ ] 실험 6: TLB miss - 순차 vs 랜덤 접근 성능 측정
 - [ ] 실험 6: TLB miss - 순차 vs 랜덤 접근 성능 측정
 
 ## 학습자 배경
